@@ -432,3 +432,30 @@ class SimpleGraph(BaseGraph[Any, Any]):
             'red'
         """
         return self._representation.get_vertex(vertex_id)
+
+    def get_edge(self, source: Any, target: Any) -> Edge:
+        """
+        Get edge object.
+
+        Args:
+            source: Source vertex identifier
+            target: Target vertex identifier
+
+        Returns:
+            Edge object
+
+        Raises:
+            KeyError: If edge doesn't exist
+
+        Examples:
+            >>> graph = SimpleGraph()
+            >>> graph.add_vertex("A")
+            >>> graph.add_vertex("B")
+            >>> graph.add_edge("A", "B", weight=5.0, label="test")
+            >>> edge = graph.get_edge("A", "B")
+            >>> edge.weight
+            5.0
+            >>> edge.attributes["label"]
+            'test'
+        """
+        return self._representation.get_edge(source, target)
