@@ -89,7 +89,7 @@ class SimpleGraph(BaseGraph[Any, Any]):
         Factory method for creating representation strategy.
 
         Args:
-            repr_type: Type of representation ("adjacency_list", "adjacency_matrix")
+            repr_type: Type of representation ("adjacency_list", "adjacency_matrix", "edge_list")
 
         Returns:
             GraphRepresentation instance
@@ -97,9 +97,12 @@ class SimpleGraph(BaseGraph[Any, Any]):
         Raises:
             ValueError: If representation type is not supported
         """
+        from packages.representations.edge_list import EdgeListRepresentation
+        
         repr_map = {
             "adjacency_list": AdjacencyListRepresentation,
             "adjacency_matrix": AdjacencyMatrixRepresentation,
+            "edge_list": EdgeListRepresentation,
         }
 
         if repr_type not in repr_map:

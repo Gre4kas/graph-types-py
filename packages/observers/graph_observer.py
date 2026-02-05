@@ -1,5 +1,8 @@
 """
 Observer pattern implementation for graph changes.
+
+This module provides the abstract base class for observers that want
+to be notified of graph modifications.
 """
 
 from __future__ import annotations
@@ -12,57 +15,61 @@ class GraphObserver(ABC):
     """
     Abstract observer for graph change notifications.
 
+    Observers implementing this interface can be attached to graphs
+    to receive notifications when vertices or edges are added/removed.
+
     Examples:
-        >>> class MyObserver(GraphObserver):
-        ...     def update(self, event: str, *args):
-        ...         print(f"Event: {event}, Args: {args}")
+        >>> class PrintObserver(GraphObserver):
+        ...     def update(self, event: str, *args, **kwargs):
+        ...         print(f"Graph changed: {event} with {args}")
         >>> 
         >>> graph = SimpleGraph()
-        >>> graph.attach_observer(MyObserver())
-        >>> graph.add_vertex("A")  # Triggers notification
+        >>> observer = PrintObserver()
+        >>> graph.attach_observer(observer)
+        >>> graph.add_vertex("A")  # Prints: Graph changed: vertex_added with ('A',)
     """
 
     @abstractmethod
     def update(self, event: str, *args: Any, **kwargs: Any) -> None:
         """
-        Called when graph changes.
+        Called when graph changes occur.
 
         Args:
-            event: Type of change ("vertex_added", "edge_removed", etc.)
-            *args: Event-specific arguments
+            event: Type of change event. Common events:
+                - "vertex_added": args = (vertex_id,)
+                - "vertex_removed": args = (vertex_id,)
+                - "edge_added": args = (source, target)
+                - "edge_removed": args = (source, target)
+                - "representation_changed": args = (new_repr_type,)
+            *args: Event-specific positional arguments
             **kwargs: Event-specific keyword arguments
         """
         ...
 
 
-class ChangeLogger(GraphObserver):
+class ConsoleObserver(GraphObserver):
     """
-    Observer that logs all graph changes.
+    Simple observer that prints changes to console.
+
+    Useful for debugging and development.
 
     Examples:
-        >>> logger = ChangeLogger()
-        >>> graph.attach_observer(logger)
+        >>> graph = SimpleGraph()
+        >>> graph.attach_observer(ConsoleObserver())
         >>> graph.add_vertex("A")
-        >>> logger.get_history()
-        [('vertex_added', ('A',))]
+        [GRAPH] vertex_added: A
     """
 
-    def __init__(self) -> None:
-        """Initialize change logger."""
-        self._history: list[tuple[str, tuple[Any, ...]]] = []
+    def __init__(self, prefix: str = "[GRAPH]") -> None:
+        """
+        Initialize console observer.
+
+        Args:
+            prefix: Prefix for console messages
+        """
+        self.prefix = prefix
 
     def update(self, event: str, *args: Any, **kwargs: Any) -> None:
-        """Log the change."""
-        self._history.append((event, args))
-
-    def get_history(self) -> list[tuple[str, tuple[Any, ...]]]:
-        """Get change history."""
-        return self._history.copy()
-
-    def clear_history(self) -> None:
-        """Clear change history."""
-        self._history.clear()
-
-    def __repr__(self) -> str:
-        """String representation."""
-        return f"ChangeLogger(events={len(self._history)})"
+        """Print change to console."""
+        args_str = ", ".join(str(arg) for arg in args)
+        print(f"{self.prefix} {event}: {args_str}")
