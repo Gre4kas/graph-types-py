@@ -1,0 +1,45 @@
+# Ruff configuration for graph-library
+# Based on 2025 best practices
+
+line-length = 100
+indent-width = 4
+target-version = "py312"
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade (Python 3.12+ features)
+    "B",    # flake8-bugbear (common bugs)
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "RUF",  # Ruff-specific rules
+]
+
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Unused imports
+"tests/*" = ["S101", "PLR2004"]  # Assert, magic values
+
+[lint.isort]
+known-first-party = ["packages"]
+force-single-line = false
+
+[lint.pydocstyle]
+convention = "google"
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
