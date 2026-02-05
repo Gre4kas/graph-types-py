@@ -410,3 +410,25 @@ class SimpleGraph(BaseGraph[Any, Any]):
         for edge in self.edges():
             pseudo.add_edge(edge.source, edge.target, weight=edge.weight, **edge.attributes)
         return pseudo
+
+    def get_vertex(self, vertex_id: Any) -> Vertex:
+        """
+        Get vertex object by ID.
+
+        Args:
+            vertex_id: Vertex identifier
+
+        Returns:
+            Vertex object
+
+        Raises:
+            KeyError: If vertex doesn't exist
+
+        Examples:
+            >>> graph = SimpleGraph()
+            >>> graph.add_vertex("A", color="red")
+            >>> vertex = graph.get_vertex("A")
+            >>> vertex.attributes["color"]
+            'red'
+        """
+        return self._representation.get_vertex(vertex_id)
