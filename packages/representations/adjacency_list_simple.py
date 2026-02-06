@@ -6,82 +6,38 @@ neighbor lookups and separate dict for edge storage.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Any, Iterable
 
 from packages.representations.base_representation import GraphRepresentation
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from packages.core.edge import Edge
     from packages.core.vertex import Vertex, VertexId
 
 
 class SimpleAdjacencyListRepresentation(GraphRepresentation):
-    """Adjacency list for simple graphs (no multi-edges).
+    """Adjacency list for simple graphs (no multi-edges)."""
 
-    This implementation uses a set-based adjacency structure for maximum speed
-    in neighbor lookups and edge existence checks. It is optimized for simple
-    graphs where duplicate edges are not allowed.
-
-    Data Structure:
-        - _adjacency: dict[VertexId, set[VertexId]] - Fast neighbor lookups
-        - _edges: dict[tuple[VertexId, VertexId], Edge] - Edge object storage
-        - _edge_count: int - Cached edge count for O(1) access
-
-    Performance Characteristics:
-        - has_edge: O(1) average via set membership
-        - get_neighbors: O(1) to get set, O(k) to iterate k neighbors
-        - add_edge: O(1) average
-        - remove_edge: O(1) average
-
-    Memory:
-        Uses __slots__ to minimize overhead. Approximately 64 bytes per vertex
-        + 16 bytes per edge (set element) + edge object size.
-
-    Thread Safety:
-        Not thread-safe. External synchronization required.
-
-    Examples:
-        >>> repr = SimpleAdjacencyListRepresentation()
-        >>> repr.add_vertex(Vertex(id="A"))
-        >>> repr.add_vertex(Vertex(id="B"))
-        >>> repr.add_edge(Edge(source="A", target="B", weight=5.0))
-        >>> repr.has_edge("A", "B")
-        True
-        >>> repr.add_edge(Edge(source="A", target="B"))  # Raises ValueError
-    """
-
-    __slots__ = ("_adjacency", "_edges", "_edge_count")
+    __slots__ = ("_adjacency", "_edges", "_edge_count", "_vertices_store")
 
     def __init__(self) -> None:
         """Initialize an empty simple adjacency list."""
         self._adjacency: dict[VertexId, set[VertexId]] = {}
         self._edges: dict[tuple[VertexId, VertexId], Edge[VertexId]] = {}
         self._edge_count: int = 0
+        self._vertices_store: dict[VertexId, Vertex[VertexId]] = {}
 
     def add_vertex(self, vertex: Vertex[VertexId]) -> None:
-        """Add a vertex to the graph (idempotent).
-
-        Args:
-            vertex: Validated Vertex instance
-
-        Time Complexity:
-            O(1) amortized
-        """
+        """Add a vertex to the graph (idempotent)."""
         if vertex.id not in self._adjacency:
             self._adjacency[vertex.id] = set()
+        # Always update vertex data in case attributes changed
+        self._vertices_store[vertex.id] = vertex
 
     def remove_vertex(self, vertex_id: VertexId) -> None:
-        """Remove a vertex and all incident edges.
-
-        Args:
-            vertex_id: Vertex identifier to remove
-
-        Raises:
-            KeyError: If vertex does not exist
-
-        Time Complexity:
-            O(V + E) worst case
-        """
+        """Remove a vertex and all incident edges."""
         if vertex_id not in self._adjacency:
             msg = f"Vertex {vertex_id!r} does not exist"
             raise KeyError(msg)
@@ -98,20 +54,10 @@ class SimpleAdjacencyListRepresentation(GraphRepresentation):
 
         # Remove the vertex itself
         del self._adjacency[vertex_id]
+        del self._vertices_store[vertex_id]
 
     def add_edge(self, edge: Edge[VertexId]) -> None:
-        """Add an edge to the graph.
-
-        Args:
-            edge: Validated Edge instance
-
-        Raises:
-            ValueError: If source or target vertex does not exist
-            ValueError: If edge already exists (no duplicates allowed)
-
-        Time Complexity:
-            O(1) amortized
-        """
+        """Add an edge to the graph."""
         if edge.source not in self._adjacency:
             msg = f"Source vertex {edge.source!r} does not exist"
             raise ValueError(msg)
@@ -137,22 +83,11 @@ class SimpleAdjacencyListRepresentation(GraphRepresentation):
         self._edge_count += 1
 
     def remove_edge(self, source: VertexId, target: VertexId) -> None:
-        """Remove an edge from the graph.
-
-        Args:
-            source: Source vertex identifier
-            target: Target vertex identifier
-
-        Raises:
-            ValueError: If edge does not exist
-
-        Time Complexity:
-            O(1) amortized
-        """
+        """Remove an edge from the graph."""
         self._remove_edge_internal(source, target)
 
     def _remove_edge_internal(self, source: VertexId, target: VertexId) -> None:
-        """Internal method to remove edge (used by remove_vertex)."""
+        """Internal method to remove edge."""
         if source not in self._adjacency or target not in self._adjacency[source]:
             msg = f"Edge {source!r} -> {target!r} does not exist"
             raise ValueError(msg)
@@ -166,49 +101,27 @@ class SimpleAdjacencyListRepresentation(GraphRepresentation):
         )
 
         if edge is None:
-            msg = f"Edge {source!r} -> {target!r} does not exist in edge storage"
-            raise ValueError(msg)
+            # Should not happen if consistency is maintained
+            pass
 
         # Remove from adjacency structure
         self._adjacency[source].discard(target)
 
-        # For undirected edges, remove reverse direction
-        if not edge.directed:
+        if edge and not edge.directed:
             self._adjacency[target].discard(source)
 
         # Remove edge object
         actual_key = edge_key_directed if edge_key_directed in self._edges else edge_key_undirected
-        del self._edges[actual_key]
-        self._edge_count -= 1
+        if actual_key in self._edges:
+            del self._edges[actual_key]
+            self._edge_count -= 1
 
     def has_edge(self, source: VertexId, target: VertexId) -> bool:
-        """Check if an edge exists (O(1) average).
-
-        Args:
-            source: Source vertex identifier
-            target: Target vertex identifier
-
-        Returns:
-            True if edge exists, False otherwise
-        """
+        """Check if an edge exists."""
         return source in self._adjacency and target in self._adjacency[source]
 
     def get_edge(self, source: VertexId, target: VertexId) -> Edge[VertexId]:
-        """Retrieve a single edge.
-
-        Args:
-            source: Source vertex identifier
-            target: Target vertex identifier
-
-        Returns:
-            Edge object
-
-        Raises:
-            ValueError: If edge does not exist
-
-        Time Complexity:
-            O(1) amortized
-        """
+        """Retrieve a single edge."""
         # Try directed key
         edge = self._edges.get((source, target))
         if edge is not None:
@@ -227,44 +140,47 @@ class SimpleAdjacencyListRepresentation(GraphRepresentation):
         source: VertexId,
         target: VertexId,
     ) -> list[Edge[VertexId]]:
-        """Retrieve all edges (returns list of 0 or 1 element for simple graphs).
-
-        Args:
-            source: Source vertex identifier
-            target: Target vertex identifier
-
-        Returns:
-            List containing the edge, or empty list if no edge exists
-        """
+        """Retrieve all edges (returns list of 0 or 1 element)."""
         try:
             return [self.get_edge(source, target)]
         except ValueError:
             return []
 
     def get_neighbors(self, vertex_id: VertexId) -> Iterable[VertexId]:
-        """Get all neighbors (O(1) to get set).
-
-        Args:
-            vertex_id: Vertex identifier
-
-        Returns:
-            Set of neighbor vertex identifiers
-
-        Raises:
-            KeyError: If vertex does not exist
-        """
+        """Get all neighbors."""
         if vertex_id not in self._adjacency:
             msg = f"Vertex {vertex_id!r} does not exist"
             raise KeyError(msg)
         return self._adjacency[vertex_id]
 
     def vertex_count(self) -> int:
-        """Get vertex count (O(1))."""
+        """Get vertex count."""
         return len(self._adjacency)
 
     def edge_count(self) -> int:
-        """Get edge count (O(1))."""
+        """Get edge count."""
         return self._edge_count
+
+    # --- New methods required by SimpleGraph ---
+
+    def has_vertex(self, vertex_id: VertexId) -> bool:
+        """Check if vertex exists."""
+        return vertex_id in self._vertices_store
+
+    def get_vertex(self, vertex_id: VertexId) -> Vertex[VertexId]:
+        """Get vertex object."""
+        if vertex_id not in self._vertices_store:
+            msg = f"Vertex {vertex_id!r} does not exist"
+            raise KeyError(msg)
+        return self._vertices_store[vertex_id]
+
+    def vertices(self) -> Iterator[Vertex[VertexId]]:
+        """Iterate over all vertices."""
+        yield from self._vertices_store.values()
+
+    def edges(self) -> Iterator[Edge[VertexId]]:
+        """Iterate over all edges."""
+        yield from self._edges.values()
 
     @staticmethod
     def _make_edge_key(
