@@ -119,3 +119,6 @@ docs/_autosummary/
 *.tmp
 *.bak
 *.old
+
+# Output files
+output/*
