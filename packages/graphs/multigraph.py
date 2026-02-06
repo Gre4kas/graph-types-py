@@ -158,16 +158,7 @@ class MultigraphRepresentation(GraphRepresentation):
 
     def edges(self) -> Iterator[Edge]:
         """Iterate over all edges (including parallel edges)."""
-        if self._directed:
-            yield from self._edges.values()
-        else:
-            # For undirected, avoid duplicates
-            seen = set()
-            for edge in self._edges.values():
-                edge_sig = (min(edge.source, edge.target), max(edge.source, edge.target))
-                if edge_sig not in seen:
-                    seen.add(edge_sig)
-                    yield edge
+        yield from self._edges.values()
 
     def vertex_count(self) -> int:
         """Get vertex count."""
@@ -263,6 +254,14 @@ class Multigraph(BaseGraph[Any, Any]):
     def get_neighbors(self, vertex_id: Any) -> set[Any]:
         """Get neighbors (unique, even if multiple edges exist)."""
         return self._representation.get_neighbors(vertex_id)
+
+    def vertex_count(self) -> int:
+        """Get total number of vertices."""
+        return self._representation.vertex_count()
+
+    def edge_count(self) -> int:
+        """Get total number of edges (including parallel edges)."""
+        return self._representation.edge_count()
 
     def vertices(self) -> Iterator[Vertex]:
         """Iterate over vertices."""

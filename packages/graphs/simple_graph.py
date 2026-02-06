@@ -333,6 +333,14 @@ class SimpleGraph(BaseGraph[Any, Any]):
 
         return self._representation.get_neighbors(vertex_id)
 
+    def vertex_count(self) -> int:
+        """Get total number of vertices."""
+        return self._representation.vertex_count()
+
+    def edge_count(self) -> int:
+        """Get total number of edges."""
+        return self._representation.edge_count()
+
     def vertices(self) -> Iterator[Vertex]:
         """
         Iterate over all vertices in the graph.

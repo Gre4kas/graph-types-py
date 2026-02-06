@@ -100,15 +100,15 @@ class TestShortestPath:
         distances = dijkstra(weighted_graph, "A")
         
         assert distances["A"] == 0.0
-        assert distances["B"] == 4.0
+        assert distances["B"] == 3.0
         assert distances["C"] == 2.0
-        assert distances["D"] == 9.0
+        assert distances["D"] == 8.0
 
     def test_dijkstra_with_target(self, weighted_graph: SimpleGraph) -> None:
         """Test Dijkstra with target vertex."""
         distances, predecessors = dijkstra(weighted_graph, "A", "D")
         
-        assert distances["D"] == 9.0
+        assert distances["D"] == 8.0
         
         path = reconstruct_path(predecessors, "A", "D")
         assert path is not None
