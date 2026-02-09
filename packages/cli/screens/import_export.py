@@ -13,7 +13,6 @@ from textual.widgets import Button, Footer, Header, Input, Label, Select, TextAr
 
 from packages.utils.serializers import JSONSerializer
 from packages.integrations.networkx_adapter import NetworkXAdapter
-from packages.converters.graph_converters import GraphConverter  # предположительно есть
 from packages.graphs.factory import GraphFactory
 
 
@@ -26,7 +25,7 @@ class ImportPreviewModel(BaseModel):
     edges: list[dict[str, Any]]
 
 
-class ImportScreen(Screen[None]):
+class ImportExportScreen(Screen[None]):
     """Экран импорта графа из файла."""
 
     BINDINGS = [("escape", "back", "Back")]

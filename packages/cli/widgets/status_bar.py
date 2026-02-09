@@ -32,23 +32,23 @@ class StatusBar(Static):
         representation: str,
     ) -> None:
         self._graph_info = f"{graph_type} | {'directed' if directed else 'undirected'} | {representation}"
-        self._render()
+        self._refresh_ui()
 
     def set_message(self, message: str) -> None:
         self._base_message = message
         self._error = ""
-        self._render()
+        self._refresh_ui()
 
     def set_warning(self, message: str) -> None:
         self._warning = message
         self._error = ""
-        self._render()
+        self._refresh_ui()
 
     def set_error(self, message: str) -> None:
         self._error = message
-        self._render()
+        self._refresh_ui()
 
-    def _render(self) -> None:
+    def _refresh_ui(self) -> None:
         parts: list[str] = []
         if self._graph_info:
             parts.append(self._graph_info)

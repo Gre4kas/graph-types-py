@@ -73,76 +73,72 @@ class AlgorithmRunnerScreen(Screen[None]):
         table = self.query_one("#algo-result", DataTable)
         table.clear()
 
-        if algo in ("bfs", "dfs") and not start:
+        if algo in ("bfs", "dfs", "dijkstra", "bellman_ford") and not start:
+            # Optionally show some error feedback in UI
             return
 
-        if algo == "bfs":
-            order = BFSRunner(self.graph, start, step).run()
-            table.add_row("Order", " -> ".join(map(str, order)))
-        elif algo == "dfs":
-            order = DFSRunner(self.graph, start, step).run()
-            table.add_row("Order", " -> ".join(map(str, order)))
-        elif algo == "dijkstra":
-            dist = dijkstra(self.graph, start)
-            for v, d in dist.items():
-                table.add_row(str(v), str(d))
-        elif algo == "bellman_ford":
-            dist = bellman_ford(self.graph, start)
-            for v, d in dist.items():
-                table.add_row(str(v), str(d))
-        elif algo == "prim":
-            mst = prim_mst(self.graph)
-            table.add_row("MST edges", str(list(mst.edges())))
-        elif algo == "kruskal":
-            mst = kruskal_mst(self.graph)
-            table.add_row("MST edges", str(list(mst.edges())))
-        elif algo == "pagerank":
-            ranks = NetworkXAlgorithms.pagerank(self.graph)
-            for v, r in ranks.items():
-                table.add_row(str(v), f"{r:.4f}")
+        try:
+            if algo == "bfs":
+                order = BFSRunner(self.graph, start, step).run()
+                table.add_row("Order", " -> ".join(map(str, order)))
+            elif algo == "dfs":
+                order = DFSRunner(self.graph, start, step).run()
+                table.add_row("Order", " -> ".join(map(str, order)))
+            elif algo == "dijkstra":
+                dist = dijkstra(self.graph, start)
+                for v, d in dist.items():
+                    table.add_row(str(v), str(d))
+            elif algo == "bellman_ford":
+                dist = bellman_ford(self.graph, start)
+                if dist is None:
+                    table.add_row("Error", "Negative cycle detected")
+                else:
+                    for v, d in dist.items():
+                         table.add_row(str(v), str(d))
+            elif algo == "prim":
+                # prim_mst returns a BaseGraph
+                mst = prim_mst(self.graph)
+                table.add_row("MST edges", str(list(mst.edges())))
+            elif algo == "kruskal":
+                # kruskal_mst returns list[Edge]
+                mst_edges = kruskal_mst(self.graph)
+                table.add_row("MST edges", str(mst_edges))
+            elif algo == "pagerank":
+                try:
+                    ranks = NetworkXAlgorithms.pagerank(self.graph)
+                    for v, r in ranks.items():
+                        table.add_row(str(v), f"{r:.4f}")
+                except ImportError as e:
+                    table.add_row("Error", str(e))
+        except Exception as e:
+             table.add_row("Error", str(e))
 
 
 class BFSRunner:
-    """Каркас для BFS с опциональной пошаговой визуализацией."""
-
-    def __init__(
-        self,
-        graph: BaseGraph,
-        start: Any,
-        step_visual: bool,
-    ) -> None:
+    """BFS class that consumes the iterator."""
+    def __init__(self, graph: BaseGraph, start: Any, step_visual: bool) -> None:
         self.graph = graph
         self.start = start
         self.step_visual = step_visual
 
     def run(self) -> list[Any]:
-        # можно использовать algorithms.traversal.bfs со своим callback
-        order: list[Any] = []
-
-        def _visit(v: Any) -> None:
-            order.append(v)
-            # TODO: интеграция с GraphCanvas для подсветки шага
-
-        bfs(self.graph, self.start, visit=_visit)
+        order = []
+        # Consume the iterator
+        for vertex in bfs(self.graph, self.start):
+            order.append(vertex)
+            # TODO: step visual logic
         return order
 
 
 class DFSRunner:
-    def __init__(
-        self,
-        graph: BaseGraph,
-        start: Any,
-        step_visual: bool,
-    ) -> None:
+    """DFS class that consumes the iterator."""
+    def __init__(self, graph: BaseGraph, start: Any, step_visual: bool) -> None:
         self.graph = graph
         self.start = start
         self.step_visual = step_visual
 
     def run(self) -> list[Any]:
-        order: list[Any] = []
-
-        def _visit(v: Any) -> None:
-            order.append(v)
-
-        dfs(self.graph, self.start, visit=_visit)
+        order = []
+        for vertex in dfs(self.graph, self.start):
+            order.append(vertex)
         return order

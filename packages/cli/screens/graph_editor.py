@@ -45,27 +45,62 @@ class TUIGraphObserver(GraphObserver):
     def __init__(self, log_widget: ObserverLog) -> None:
         self.log = log_widget
 
-    def on_vertex_added(self, vertex: Any) -> None:
-        self.log.add_entry(f"➕ Добавлена вершина {vertex.id}", timestamp=True)
+    def update(self, event: str, *args: Any, **kwargs: Any) -> None:
+        """Dispatch update events to specific handlers."""
+        if event == "vertex_added":
+            self.on_vertex_added(args[0])
+        elif event == "vertex_removed":
+            self.on_vertex_removed(args[0])
+        elif event == "edge_added":
+            # edge_added sends (source, target), but on_edge_added expects Edge object? 
+            # Wait, BaseGraph says: _notify_observers("edge_added", source, target)
+            # TUIGraphObserver.on_edge_added expects 'edge: Any'.
+            # Let's check on_edge_added signature in existing code.
+            pass
+        elif event == "edge_removed":
+            pass
+        elif event == "representation_changed":
+            # representation_changed sends (new_repr_type,)
+            # on_representation_changed expects (old, new)
+            pass
+        
+        # Actually, let's look at what BaseGraph sends vs what TUIGraphObserver expects.
+        # BaseGraph: _notify_observers("vertex_added", vertex_id)
+        # TUIGraphObserver.on_vertex_added(vertex: Any) -> vertex.id usage suggests it expects a Vertex object?
+        # In simple_graph.py: _notify_observers("vertex_added", vertex_id) -> sends ID.
+        # So TUIGraphObserver.on_vertex_added(vertex) using vertex.id might be wrong if it receives an ID.
+        
+        # Let's fix the implementation of TUIGraphObserver methods and update dispatch together.
+
+    def on_vertex_added(self, vertex_id: Any) -> None:
+        self.log.add_entry(f"➕ Добавлена вершина {vertex_id}", timestamp=True)
 
     def on_vertex_removed(self, vertex_id: Any) -> None:
         self.log.add_entry(f"➖ Удалена вершина {vertex_id}", timestamp=True)
 
-    def on_edge_added(self, edge: Any) -> None:
-        self.log.add_entry(f"➕ Добавлено ребро ({edge.source},{edge.target})", timestamp=True)
+    def on_edge_added(self, source: Any, target: Any) -> None:
+        self.log.add_entry(f"➕ Добавлено ребро ({source},{target})", timestamp=True)
 
-    def on_edge_removed(self, edge: Any) -> None:
-        self.log.add_entry(f"➖ Удалено ребро ({edge.source},{edge.target})", timestamp=True)
+    def on_edge_removed(self, source: Any, target: Any) -> None:
+        self.log.add_entry(f"➖ Удалено ребро ({source},{target})", timestamp=True)
 
-    def on_representation_changed(
-        self,
-        old: BaseRepresentation,
-        new: BaseRepresentation,
-    ) -> None:
+    def on_representation_changed(self, new_repr_type: str) -> None:
         self.log.add_entry(
-            f"🔄 Представление: {old.__class__.__name__} → {new.__class__.__name__}",
+            f"🔄 Представление изменено на: {new_repr_type}",
             timestamp=True,
         )
+
+    def update(self, event: str, *args: Any, **kwargs: Any) -> None:
+        if event == "vertex_added":
+            self.on_vertex_added(args[0])
+        elif event == "vertex_removed":
+            self.on_vertex_removed(args[0])
+        elif event == "edge_added":
+            self.on_edge_added(args[0], args[1])
+        elif event == "edge_removed":
+            self.on_edge_removed(args[0], args[1])
+        elif event == "representation_changed":
+            self.on_representation_changed(args[0])
 
 
 @dataclass
@@ -146,19 +181,22 @@ class GraphEditorScreen(Screen[None]):
         # Attach observer
         log = self.query_one(ObserverLog)
         self.observer = TUIGraphObserver(log)
-        try:
-            self.graph.attach_observer(self.observer)  # если API такое
-        except Exception:
-            # Если другой API, это место ты адаптируешь под свой GraphObserver
-            pass
+        
+        # Check if graph has attach_observer method
+        if hasattr(self.graph, 'attach_observer'):
+            try:
+                self.graph.attach_observer(self.observer)
+            except Exception as e:
+                log.add_entry(f"⚠ Could not attach observer: {e}")
 
         # Detect large mode
         if self.graph.vertex_count() > 1000:
             self._large_mode = True
             self.query_one(StatusBar).set_warning(
-                "Большой граф: включён упрощённый режим (без GraphCanvas)",
+                "Large graph: simplified mode enabled (no GraphCanvas)",
             )
-            self.query_one(GraphCanvas).visible = False
+            canvas = self.query_one(GraphCanvas)
+            canvas.visible = False
 
     # ---------- Helpers ----------
 
