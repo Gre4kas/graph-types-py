@@ -1,0 +1,24 @@
+/* packages/cli/styles.tcss */
+#editor-root {
+    height: 1fr;
+}
+
+#editor-main {
+    height: 1fr;
+}
+
+DataTable#vertices_table {
+    width: 25%;
+}
+
+GraphCanvas#graph_canvas {
+    width: 50%;
+}
+
+PropertyPanel#property_panel {
+    width: 25%;
+}
+
+#bottom-panel {
+    height: 6;
+}
