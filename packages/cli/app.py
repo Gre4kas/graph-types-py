@@ -11,8 +11,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.driver import Driver
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Removed sys.path manipulation to avoid RuntimeWarning when running with -m
 
 from packages.cli.screens.main_menu import MainMenuScreen
 
