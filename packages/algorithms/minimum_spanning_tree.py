@@ -59,4 +59,70 @@ def kruskal_mst(graph: BaseGraph[Any, Any]) -> list[Edge]:
             mst.append(edge)
             union(edge.source, edge.target)
     
+
+    return mst
+
+
+def prim_mst(graph: BaseGraph[Any, Any]) -> BaseGraph[Any, Any]:
+    """
+    Prim's algorithm for Minimum Spanning Tree.
+
+    Time Complexity: O(E log V) ignoring priority queue operations on dense graphs.
+    
+    Args:
+        graph: Undirected weighted graph
+    
+    Returns:
+        A new graph containing only the MST edges
+    
+    Raises:
+        ValueError: If graph is directed
+    """
+    if graph.is_directed():
+        msg = "MST only defined for undirected graphs"
+        raise ValueError(msg)
+
+    # Initialize MST graph (same type as original)
+    from packages.graphs.simple_graph import SimpleGraph
+    mst = SimpleGraph(directed=False)
+    
+    if graph.vertex_count() == 0:
+        return mst
+
+    # Start from arbitrary vertex
+    start_node = next(graph.vertices()).id
+    mst.add_vertex(start_node)
+    
+    visited = {start_node}
+    edges = []
+    
+    # Add initial edges to heap
+    for neighbor in graph.get_neighbors(start_node):
+        edge = graph.get_edge(start_node, neighbor)
+        heapq.heappush(edges, (edge.weight, edge))
+        
+    while edges:
+        weight, edge = heapq.heappop(edges)
+        
+        # Determine which stored vertex is new
+        if edge.source in visited and edge.target in visited:
+            continue
+            
+        if edge.source in visited:
+            new_vertex = edge.target
+        else:
+            new_vertex = edge.source
+            
+        # Add to MST
+        if not mst.has_vertex(new_vertex):
+            mst.add_vertex(new_vertex)
+        mst.add_edge(edge.source, edge.target, weight=weight)
+        visited.add(new_vertex)
+        
+        # Add new edges
+        for neighbor in graph.get_neighbors(new_vertex):
+            if neighbor not in visited:
+                next_edge = graph.get_edge(new_vertex, neighbor)
+                heapq.heappush(edges, (next_edge.weight, next_edge))
+                
     return mst

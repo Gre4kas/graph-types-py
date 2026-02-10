@@ -252,8 +252,7 @@ class AdjacencyListRepresentation(GraphRepresentation):
             KeyError: If vertex doesn't exist
         """
         if vertex_id not in self._vertices:
-            msg = f"Vertex {vertex_id!r} not found"
-            raise KeyError(msg)
+            raise KeyError(f"Vertex {vertex_id} not found")
         return self._vertices[vertex_id]
 
     def get_edge(self, source: Any, target: Any) -> Edge:
