@@ -73,6 +73,14 @@ class Hyperedge:
         """Check if vertex is in hyperedge."""
         return vertex_id in self.vertices
 
+    def __getitem__(self, key: str) -> Any:
+        """Allow dictionary-like access to attributes."""
+        if hasattr(self, key):
+            return getattr(self, key)
+        if key in self.attributes:
+            return self.attributes[key]
+        raise KeyError(f"Key {key!r} not found in Hyperedge")
+
     def __hash__(self) -> int:
         """Hash based on frozenset of vertices."""
         if not hasattr(self, "_hash_cache"):
@@ -448,6 +456,13 @@ class Hypergraph(BaseGraph[Any, Any]):
         if not isinstance(self._representation, HypergraphRepresentation):
             return set()
         return self._representation.get_incident_hyperedges(vertex_id)
+
+    def get_hyperedges_containing(self, vertex_id: Any) -> set[Hyperedge]:
+        """
+        Get all hyperedges containing a vertex.
+        Alias for get_incident_hyperedges.
+        """
+        return self.get_incident_hyperedges(vertex_id)
 
     def hyperedge_count(self) -> int:
         """Get total number of hyperedges."""

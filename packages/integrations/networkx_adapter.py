@@ -60,7 +60,7 @@ class NetworkXAdapter:
             graph: Graph to convert
 
         Returns:
-            NetworkX Graph or DiGraph
+            NetworkX Graph, DiGraph, MultiGraph, or MultiDiGraph
 
         Raises:
             ImportError: If NetworkX is not installed
@@ -76,11 +76,21 @@ class NetworkXAdapter:
         """
         NetworkXAdapter._check_networkx_available()
 
+        # Handle Hypergraph via bipartite representation
+        from packages.graphs.hypergraph import Hypergraph
+        if isinstance(graph, Hypergraph):
+            bipartite = graph.to_bipartite_graph()
+            return NetworkXAdapter.to_networkx(bipartite)
+
+        # Detect Multigraph/Pseudograph
+        from packages.graphs.multigraph import Multigraph
+        is_multi = isinstance(graph, Multigraph)
+
         # Create appropriate NetworkX graph type
         if graph._directed:
-            nx_graph = nx.DiGraph()
+            nx_graph = nx.MultiDiGraph() if is_multi else nx.DiGraph()
         else:
-            nx_graph = nx.Graph()
+            nx_graph = nx.MultiGraph() if is_multi else nx.Graph()
 
         # Add vertices with attributes
         for vertex in graph.vertices():

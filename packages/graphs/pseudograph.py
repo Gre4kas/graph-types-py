@@ -133,6 +133,14 @@ class Pseudograph(Multigraph):
                 count += 1
         return count
 
+    def count_self_loops(self) -> int:
+        """Count total number of self-loops in the graph."""
+        count = 0
+        for edge in self.edges():
+            if edge.source == edge.target:
+                count += 1
+        return count
+
     def total_degree(self, vertex_id: Any) -> int:
         """
         Get total degree of vertex (self-loops count twice).

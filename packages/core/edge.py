@@ -110,6 +110,19 @@ class Edge(BaseModel, Generic[VertexId]):
         """
         return self.attributes.get(key, default)
 
+    def __getitem__(self, key: str) -> Any:
+        """
+        Allow dictionary-like access to fields and attributes.
+        
+        Prioritizes fields (source, target, weight, directed),
+        then looks in attributes.
+        """
+        if hasattr(self, key) and key in self.model_fields:
+            return getattr(self, key)
+        if key in self.attributes:
+            return self.attributes[key]
+        raise KeyError(f"Key {key!r} not found in Edge fields or attributes")
+
     def reverse(self) -> Edge[VertexId]:
         """
         Create a reversed edge (target -> source).

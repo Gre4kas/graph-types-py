@@ -248,6 +248,13 @@ class BaseGraph(ABC, Generic[V, E]):
         """Check if graph is directed."""
         return self._directed
 
+    def get_edge_weight(self, source: V, target: V) -> float:
+        """
+        Get weight of edge between source and target.
+        Returns weight of first edge found if multiple exist.
+        """
+        return self.get_edge(source, target).weight
+
     def vertex_count(self) -> int:
         """Get total number of vertices."""
         return len(list(self.vertices()))
@@ -255,6 +262,14 @@ class BaseGraph(ABC, Generic[V, E]):
     def edge_count(self) -> int:
         """Get total number of edges."""
         return len(list(self.edges()))
+
+    def get_vertices(self) -> list[V]:
+        """Get list of all vertex IDs."""
+        return [v.id for v in self.vertices()]
+
+    def get_edges(self) -> list[Edge]:
+        """Get list of all edges."""
+        return list(self.edges())
 
     def convert_representation(self, new_repr_type: str) -> None:
         """

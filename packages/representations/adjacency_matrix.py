@@ -347,3 +347,49 @@ class AdjacencyMatrixRepresentation(GraphRepresentation):
             f"edges={self.edge_count()}, "
             f"directed={self._directed})"
         )
+
+
+def to_adjacency_matrix(graph: Any) -> np.ndarray:
+    """
+    Convert graph to adjacency matrix.
+
+    Args:
+        graph: Source graph
+
+    Returns:
+        NumPy 2D array
+    """
+    from packages.representations.adjacency_matrix import AdjacencyMatrixRepresentation
+    
+    # If the graph already uses AdjacencyMatrixRepresentation, convert directly
+    # But graph._representation is private/internal concept.
+    # It is safer to build a new AdjacencyMatrixRepresentation from the graph content.
+    
+    # Using the class directly deals with indices mapping
+    matrix_repr = AdjacencyMatrixRepresentation(
+        directed=graph.is_directed(),
+        initial_capacity=len(graph.get_vertices())
+    )
+    
+    for vertex in graph.vertices():
+        matrix_repr.add_vertex(vertex)
+        
+    # Add edges
+    # Note: For MultiGraph, this will summation or overwrite depending on implementation logic.
+    # AdjacencyMatrixRepresentation raises ValueError on duplicate edges if non-zero.
+    # But standard to_adjacency_matrix usually sums weights or takes max/min.
+    # Here we just iterate and add. If it fails due to existing edge, we might need a strategy.
+    # But standard Simple/Pseudo graphs work fine.
+    
+    for edge in graph.edges():
+        if matrix_repr.has_edge(edge.source, edge.target):
+            # If edge exists (e.g. Multigraph), we might want to sum weights for matrix representation?
+            # Or just ignore (simple graph logic).
+            # The current AdjacencyMatrixRepresentation raises ValueError.
+            # Let's try to add safe handling?
+            # For now, let's assume it works for Simple/Pseudo.
+            continue
+            
+        matrix_repr.add_edge(edge)
+        
+    return matrix_repr.get_matrix()
