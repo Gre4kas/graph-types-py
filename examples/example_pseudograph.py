@@ -8,7 +8,7 @@ Demonstrates:
 - Converting to adjacency matrix with self-loops
 """
 
-from packages.graphs.pseudograph import Pseudograph
+from packages.graphs import Pseudograph
 from packages.representations.adjacency_matrix import to_adjacency_matrix
 from packages.algorithms.shortest_path import dijkstra
 

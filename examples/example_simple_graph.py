@@ -8,7 +8,7 @@ Demonstrates:
 - Converting between adjacency list and adjacency matrix representations
 """
 
-from packages.graphs.simple_graph import SimpleGraph
+from packages.graphs import SimpleGraph
 from packages.algorithms.traversal import bfs
 from packages.representations.adjacency_matrix import to_adjacency_matrix
 from packages.representations.adjacency_list import to_adjacency_list

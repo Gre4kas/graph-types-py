@@ -8,7 +8,7 @@ Demonstrates:
 - Working with parallel edges (multiple connections)
 """
 
-from packages.graphs.multigraph import Multigraph
+from packages.graphs import Multigraph
 from packages.algorithms.traversal import dfs
 from packages.representations.edge_list import to_edge_list
 

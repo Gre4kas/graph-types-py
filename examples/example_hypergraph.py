@@ -8,7 +8,7 @@ Demonstrates:
 - Converting to incidence matrix representation
 """
 
-from packages.graphs.hypergraph import Hypergraph
+from packages.graphs import Hypergraph
 from packages.representations.adjacency_list import to_adjacency_list
 from packages.representations.incidence_matrix import to_incidence_matrix
 
