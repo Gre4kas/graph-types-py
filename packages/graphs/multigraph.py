@@ -251,6 +251,14 @@ class Multigraph(BaseGraph[Any, Any]):
         """Check if at least one edge exists."""
         return self._representation.has_edge(source, target)
 
+    def get_edge(self, source: Any, target: Any) -> Edge:
+        """
+        Get first edge between source and target.
+        
+        If multiple edges exist, returns the first one found.
+        """
+        return self._representation.get_edge(source, target)
+
     def get_neighbors(self, vertex_id: Any) -> set[Any]:
         """Get neighbors (unique, even if multiple edges exist)."""
         return self._representation.get_neighbors(vertex_id)
@@ -283,3 +291,22 @@ class Multigraph(BaseGraph[Any, Any]):
             if edge.source == source and edge.target == target:
                 count += 1
         return count
+
+    def get_edges_between(self, source: Any, target: Any) -> list[Edge]:
+        """
+        Get list of all edges between two vertices.
+
+        Args:
+            source: Source vertex
+            target: Target vertex
+
+        Returns:
+            List of Edge objects connecting the vertices
+        """
+        edges = []
+        for edge in self.edges():
+            if edge.source == source and edge.target == target:
+                edges.append(edge)
+            elif not self._directed and edge.source == target and edge.target == source:
+                edges.append(edge)
+        return edges

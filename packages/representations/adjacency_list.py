@@ -329,3 +329,21 @@ class AdjacencyListRepresentation(GraphRepresentation):
             f"edges={self.edge_count()}, "
             f"directed={self._directed})"
         )
+
+
+def to_adjacency_list(graph: Any) -> dict[Any, set[Any]]:
+    """
+    Convert any graph to adjacency list format.
+
+    Args:
+        graph: Source graph (can be Simple, Multi, Pseudo, or Hypergraph)
+
+    Returns:
+        Dictionary mapping vertex_id -> set of neighbor_ids
+    """
+    adj_list: dict[Any, set[Any]] = {}
+    
+    for vertex in graph.vertices():
+        adj_list[vertex.id] = graph.get_neighbors(vertex.id)
+        
+    return adj_list

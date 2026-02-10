@@ -336,3 +336,27 @@ class EdgeListRepresentation(GraphRepresentation):
             f"edges={self.edge_count()}, "
             f"directed={self._directed})"
         )
+
+
+def to_edge_list(graph: Any) -> list[dict[str, Any]]:
+    """
+    Convert graph to edge list format (list of dicts).
+
+    Args:
+        graph: Source graph
+
+    Returns:
+        List of dictionaries with edge data (source, target, weight, attributes...)
+    """
+    edge_list = []
+    
+    for edge in graph.edges():
+        edge_data = {
+            "source": edge.source,
+            "target": edge.target,
+            "weight": edge.weight,
+            **edge.attributes
+        }
+        edge_list.append(edge_data)
+        
+    return edge_list
