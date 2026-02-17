@@ -8,7 +8,7 @@
 
 Використовуйте цю матрицю, щоб визначити, який клас найкраще підходить для вашого проєкту:
 
-| Обмеження | SimpleGraph | Multigraph | Pseudograph | Hypergraph |
+| Обмеження | [SimpleGraph](simple_graph.md) | [Multigraph](multi_graph.md) | [Pseudograph](pseudo_graph.md) | [Hypergraph](hypergraph.md) |
 | :--- | :---: | :---: | :---: | :---: |
 | **Петлі** (A → A) | ❌ Ні | ❌ Ні | ✅ Так | N/A |
 | **Паралельні ребра** (A ⇉ B) | ❌ Ні | ✅ Так | ✅ Так | ✅ Так |

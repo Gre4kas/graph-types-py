@@ -4,7 +4,11 @@ Welcome to the documentation for **graph-types-py**, a custom graph library impl
 
 ## Core Concepts
 
-*   **[Graph Types](graph_types.md)** ([Укр](graph_types_ua.md)): Explore the 4 fundamental graph types (`SimpleGraph`, `Multigraph`, `Pseudograph`, `Hypergraph`) and their specific use cases.
+*   **Graph Types** ([Укр](graph_types_ua.md)):
+    *   [Simple Graph](simple_graph.md)
+    *   [Pseudograph](pseudo_graph.md)
+    *   [Multigraph](multi_graph.md)
+    *   [Hypergraph](hypergraph.md)
 *   **[Installation](installation.md)**: How to install and set up the library.
 *   **[Quickstart](quickstart.md)**: Get up and running in minutes.
 *   **[Visualization](VISUALIZATION.md)**: How to visualize your graphs.
