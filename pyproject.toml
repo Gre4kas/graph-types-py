@@ -23,6 +23,9 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 
+[project.scripts]
+graph-tui = "packages.cli.app:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
@@ -38,6 +41,12 @@ dev = [
 docs = [
     "mkdocs>=1.6.0",
     "mkdocs-material>=9.5.0",
+]
+
+cli = [
+    "textual>=0.86.0",
+    "rich>=13.9.0",
+    "structlog>=24.4.0",
 ]
 
 [build-system]

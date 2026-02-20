@@ -245,7 +245,17 @@ class BaseGraph(ABC, Generic[V, E]):
         return len(self.get_neighbors(vertex_id))
 
     def is_directed(self) -> bool:
-        """Check if graph is directed."""
+        """
+        Check if graph is directed.
+
+        Returns:
+            True if graph is directed, False otherwise.
+
+        Examples:
+            >>> graph = SimpleGraph(directed=True)
+            >>> graph.is_directed()
+            True
+        """
         return self._directed
 
     def get_edge_weight(self, source: V, target: V) -> float:
